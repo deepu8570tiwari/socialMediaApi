@@ -1,0 +1,18 @@
+const express= require("express");
+const connectDB=require("./configs/database")
+const userRouter=require("./routes/userRoutes");
+const authRouter=require("./routes/authRoutes");
+const dotenv=require("dotenv");
+dotenv.config();
+const morgan=require("morgan");
+const helmet=require("helmet");
+const app=express();
+app.use(express.json());
+app.use(helmet());
+app.use(morgan("common"))
+app.use("/api/v1",userRouter);
+app.use("/api/v1",authRouter);
+app.listen(process.env.PORT,()=>{
+    console.log(`Server is running on ${process.env.PORT}`);
+    connectDB()
+})
