@@ -1,0 +1,44 @@
+const mongoose=require("mongoose");
+const StorySchema=new mongoose.Schema({
+    userId:{
+        type:mongoose.Schema.Types.ObjectId,
+        require:true,
+        ref:"User",
+    },
+    mediaType:{
+        type:String,
+        enum:["image","video"],
+        require:true,
+    },
+    mediaUrl:{
+        type:String,
+        required:true,
+    },
+    caption:{
+        type:String,
+    },
+    likes:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"User",
+    },
+    viewers:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"User",
+    },
+    comments:[
+        {
+            user:{
+                type:mongoose.Schema.Types.ObjectId,
+                ref:"User"
+            },
+            text:String,
+            createdAt:Date,
+        }
+    ],
+    expiryAt:{
+        type:Date,
+        default:()=>new Date(Date.now+ 24*60*60*1000),
+        expire:0
+    }
+},{timestamps:true})
+module.exports=mongoose.model("Story",StorySchema);
