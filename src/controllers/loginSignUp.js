@@ -1,5 +1,5 @@
 const User=require("../models/userModel");
-const tryCatch=require("../utils/tryCatch");
+const {tryCatch}=require("../utils/tryCatch");
 const bcrypt = require("bcrypt");
 const jwt=require("jsonwebtoken");
 const dotenv=require("dotenv");
@@ -41,7 +41,7 @@ const registerUser= tryCatch(async(req,res)=>{
   });
 
   await newUser.save();
-  const token=jwt.sign({_id:newUser._id,email: newUser.email},process.env.JWT_SECRET, {expiresIn:"5y"})
+  const token=jwt.sign({_id:newUser._id,email: newUser.email},process.env.JWT_SECRET, {expiresIn:"7d"})
   return res.status(201).json({
     message: "User registered successfully",
     user: {
@@ -51,6 +51,44 @@ const registerUser= tryCatch(async(req,res)=>{
     },
     token
   });
-
 })
-module.exports={registerUser}
+const loginUser = tryCatch(async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(422).json({ message: "Email and password are required" });
+  }
+
+  const emailRegex = /^\S+@\S+\.\S+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ message: "Invalid email format" });
+  }
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(401).json({ message: "Invalid email or password" });
+  }
+
+  const isPasswordCorrect = await bcrypt.compare(password, user.password);
+  if (!isPasswordCorrect) {
+    return res.status(401).json({ message: "Passwword is not correct" });
+  }
+
+  // 5️⃣ Generate JWT token
+  const token = jwt.sign(
+    { id: user._id, email: user.email },
+    process.env.JWT_SECRET,
+    { expiresIn: "7d" }
+  );
+
+  return res.status(200).json({
+    message: "Login successful",
+    user: {
+      id: user._id,
+      username: user.username,
+      email: user.email
+    },
+    token
+  });
+});
+module.exports={registerUser, loginUser}

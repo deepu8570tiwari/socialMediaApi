@@ -1,4 +1,5 @@
 const express= require("express");
 const routes=express.Router();
-routes.get('/', routes);
+const {allUser}=require("../controllers/userProfile");
+routes.get('/users', allUser);
 module.exports=routes;
