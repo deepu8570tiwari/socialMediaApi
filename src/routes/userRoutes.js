@@ -1,5 +1,8 @@
 const express= require("express");
 const routes=express.Router();
-const {allUser}=require("../controllers/userProfile");
+const { upload, uploadToCloudinary } = require('../middleware/isUpload');
+const authenticateToken = require('../middleware/authMiddleware');
+const {allUser,uploadProfileUser}=require("../controllers/userProfile");
 routes.get('/users', allUser);
+routes.post('/upload-profile',authenticateToken,upload.single('profilePicture'),uploadProfileUser);
 module.exports=routes;
