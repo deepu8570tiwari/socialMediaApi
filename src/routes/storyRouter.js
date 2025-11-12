@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const authenticateToken = require("../middleware/authMiddleware");
-const upload = require("../middleware/isUpload"); 
+const {upload} = require("../middleware/isUpload"); 
 
 const {
   createStory,

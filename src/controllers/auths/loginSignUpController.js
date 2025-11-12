@@ -1,5 +1,5 @@
-const User=require("../models/userModel");
-const {tryCatch}=require("../utils/tryCatch");
+const User=require("../../models/userModel");
+const {tryCatch}=require("../../utils/tryCatch");
 const bcrypt = require("bcrypt");
 const jwt=require("jsonwebtoken");
 const dotenv=require("dotenv");

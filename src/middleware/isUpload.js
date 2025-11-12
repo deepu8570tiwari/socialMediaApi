@@ -1,5 +1,5 @@
 const multer = require('multer');
-const cloudinary = require('../config/cloudinary');
+const cloudinary = require('../configs/cloudinary');
 const streamifier = require('streamifier');
 
 // Memory storage for multer

@@ -1,6 +1,7 @@
+// middleware/authenticateToken.js
 const { tryCatch } = require("../utils/tryCatch");
 const jwt = require("jsonwebtoken");
-const dotenv=require("dotenv");
+const dotenv = require("dotenv");
 dotenv.config();
 
 const authenticateToken = tryCatch(async (req, res, next) => {
@@ -11,15 +12,10 @@ const authenticateToken = tryCatch(async (req, res, next) => {
     return res.status(401).json({ message: "Access denied. No token provided." });
   }
 
-  // Convert jwt.verify to promise
-  const user = await new Promise((resolve, reject) => {
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-      if (err) reject(err);
-      else resolve(decoded);
-    });
-  });
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-  req.user = user;
+  // ✅ Attach the decoded user payload to the request
+  req.user = decoded; // example: { id: '652d3b5f...', iat: ..., exp: ... }
   next();
 });
 

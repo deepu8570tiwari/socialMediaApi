@@ -4,7 +4,8 @@ dotenv.config();
 const connectDB=async()=>{
     try {
         await mongoose.connect(process.env.NODE_MONGO_URI,{
-            dbName:"socialMedia"
+            serverSelectionTimeoutMS: 10000,
+            dbName:"socialMedia",
         })
         console.log("Database is connected ")
     } catch (error) {

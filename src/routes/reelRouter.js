@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const authenticateToken = require("../middleware/authMiddleware");
-const upload = require("../middleware/isUpload"); // ✅ if you use multer for file upload
+const {upload} = require("../middleware/isUpload"); // ✅ if you use multer for file upload
 
 const {
   createReel,

@@ -27,4 +27,4 @@ const ReelSchema=new mongoose.Schema({
         }
     ],
 },{timestamps:true})
-module.exports=mongoose.model("Reel",PostSchema);
+module.exports=mongoose.model("Reel",ReelSchema);
