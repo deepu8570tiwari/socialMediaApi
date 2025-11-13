@@ -1,6 +1,7 @@
 const { tryCatch } = require("../utils/tryCatch");
 const Post = require("../models/postModel");
 const { uploadToCloudinary } = require("../middleware/isUpload");
+const User=require("../models/userModel");
 // ===============================
 //  CREATE POST
 // ===============================
@@ -19,13 +20,19 @@ const createPost = tryCatch(async (req, res) => {
   const result = await uploadToCloudinary(req.file.buffer, "posts", resourceType);
 
   // Create post in database
+  
   const post = await Post.create({
-    user: userId,
+    userId: userId,
     caption,
     mediaType,
     mediaUrl: result.secure_url, // from Cloudinary response
+    publicId: result.public_id,
   });
-
+    const userInfo= await User.findById(userId);
+    if(userInfo){
+        userInfo.posts.push(post._id);
+        await userInfo.save();
+    }
   res.status(201).json({
     success: true,
     message: "Post created successfully",
@@ -65,18 +72,24 @@ const getSinglePost = tryCatch(async (req, res) => {
 
 
 const deletePost = tryCatch(async (req, res) => {
-    const userId = req.user._id;
+    const userId = req.user.id;
     const findPost = await Post.findById(req.params.id);
-
     if (!findPost) {
         return res.status(404).json({ success: false, message: "No post found" });
     }
 
-    if (findPost.user.toString() !== userId.toString()) {
+    if (findPost.userId.toString() !== userId.toString()) {
         return res.status(403).json({ success: false, message: "User not authorized to delete this post" });
     }
-
+    if (findPost.publicId) {
+        await cloudinary.uploader.destroy(findPost.publicId);
+    }
     await Post.deleteOne({ _id: req.params.id });
+    await User.findByIdAndUpdate(
+        userId,
+        { $pull: { posts: req.params.id } }, // removes postId from posts array
+        { new: true } // returns updated document (optional)
+    );
 
     return res.status(200).json({
         success: true,
@@ -86,9 +99,10 @@ const deletePost = tryCatch(async (req, res) => {
 
 
 const likedDislikedPost = tryCatch(async (req, res) => {
-    const userId = req.user._id;
+    const userId = req.user.id;
+    console.log(userId+"userId");
     const findPost = await Post.findById(req.params.id);
-
+    console.log(req.params.id+"req.params.id");
     if (!findPost) {
         return res.status(404).json({ success: false, message: "No post found" });
     }
@@ -113,7 +127,7 @@ const likedDislikedPost = tryCatch(async (req, res) => {
 
 
 const commentPost = tryCatch(async (req, res) => {
-    const userId = req.user._id;
+    const userId = req.user.id;
     const { text } = req.body;
 
     const findPost = await Post.findById(req.params.id);

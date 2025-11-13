@@ -14,13 +14,19 @@ const PostSchema=new mongoose.Schema({
         type:String,
         required:true,
     },
+    publicId:{
+        type:String,
+        required:true,
+    },
     caption:{
         type:String,
     },
-    likes:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"User",
-    },
+    likes: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+        }
+    ],
     comments:[
         {
             user:{
