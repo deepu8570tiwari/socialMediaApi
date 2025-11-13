@@ -1,22 +1,26 @@
 const { tryCatch } = require("../utils/tryCatch");
 const Reel = require("../models/reelModel");
-
+const { uploadToCloudinary } = require("../middleware/isUpload");
 // ===============================
 //  CREATE POST
 // ===============================
 const createReel = tryCatch(async (req, res) => {
     const { caption } = req.body;
-    const userId = req.user._id;
+    const userId = req.user.id;
 
     if (!req.file || !req.file.path) {
         return res.status(400).json({ success: false, message: "No file uploaded" });
     }
 
-    const mediaUrl = req.file.path;
+    // Determine the resource type dynamically
+    const resourceType = req.file.mimetype.startsWith("video/") ? "video" : "image";
+
+    // Upload file buffer to Cloudinary (same helper as in profile upload)
+    const result = await uploadToCloudinary(req.file.buffer, "reels", resourceType);
 
     const reel = await Reel.create({
         user: userId,
-        mediaUrl,
+        mediaUrl:result.secure_url,
         caption
     });
 
@@ -30,7 +34,7 @@ const createReel = tryCatch(async (req, res) => {
 
 const getAllReel = tryCatch(async (req, res) => {
     const getAllReels = await Reel.find()
-        .populate("user", "username profilePicture")
+        .populate("userId", "username profilePicture")
         .populate("comments.user", "username profilePicture")
         .sort({ createdAt: -1 });
 
@@ -44,7 +48,7 @@ const getAllReel = tryCatch(async (req, res) => {
 
 const getSingleReel = tryCatch(async (req, res) => {
     const singleReel = await Post.findById(req.params.id)
-        .populate("user", "username profilePicture")
+        .populate("userId", "username profilePicture")
         .populate("comments.user", "username profilePicture");
 
     if (!singleReel) {
@@ -60,7 +64,7 @@ const getSingleReel = tryCatch(async (req, res) => {
 
 
 const deleteReel = tryCatch(async (req, res) => {
-    const userId = req.user._id;
+    const userId = req.user.id;
     const findReel = await Reel.findById(req.params.id);
 
     if (!findReel) {

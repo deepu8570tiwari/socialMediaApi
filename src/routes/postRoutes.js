@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const authenticateToken = require("../middleware/authMiddleware");
-const {upload} = require("../middleware/isUpload"); // ✅ if you use multer for file upload
+const {upload} = require("../middleware/isUpload");
 
 const {
   createPost,
@@ -12,7 +12,7 @@ const {
   commentPost,
 } = require("../controllers/postController");
 
-router.post("/posts", authenticateToken, upload.single("file"), createPost);
+router.post("/posts", authenticateToken, upload.single("mediaUrl"), createPost);
 router.get("/posts", authenticateToken, getAllPost);
 router.get("/posts/:id", authenticateToken, getSinglePost);
 router.delete("/posts/:id", authenticateToken, deletePost);

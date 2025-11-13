@@ -1,20 +1,23 @@
 const { tryCatch } = require("../utils/tryCatch");
 const Story = require("../models/storyModel");
-
+const { uploadToCloudinary } = require("../middleware/isUpload");
 const createStory = tryCatch(async (req, res) => {
   const { mediaType } = req.body;
-  const userId = req.user._id;
+  const userId = req.user.id;
 
   if (!req.file || !req.file.path) {
     return res.status(400).json({ success: false, message: "No file uploaded" });
   }
-  const mediaUrl = req.file.path;
   const expiryAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  const resourceType = req.file.mimetype.startsWith("video/") ? "video" : "image";
 
+    // Upload file buffer to Cloudinary (same helper as in profile upload)
+  const result = await uploadToCloudinary(req.file.buffer, "reels", resourceType);
+    
   const story = await Story.create({
     user: userId,
     mediaType,
-    mediaUrl,
+    mediaUrl:result.secure_url,
     expiryAt,
   });
 
@@ -27,7 +30,7 @@ const createStory = tryCatch(async (req, res) => {
 
 const getAllStory = tryCatch(async (req, res) => {
   const getAllStories = await Story.find({ expiryAt: { $gt: new Date() } })
-    .populate("user", "username profilePicture")
+    .populate("userId", "username profilePicture")
     .populate("comments.user", "username profilePicture")
     .sort({ createdAt: -1 });
 

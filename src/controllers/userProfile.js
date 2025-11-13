@@ -4,7 +4,7 @@ const { uploadToCloudinary } = require("../middleware/isUpload");
 
 const allUser= tryCatch(async(req,res)=>{
     let getAllUsers=await User.find();
-    res.status(200).json({message:"All Users Listed", data:getAllUsers});
+    res.status(200).json({message:"All Users Listed", users:getAllUsers});
 })
 const uploadProfileUser = tryCatch(async (req, res) => {
   const userId = req.user.id;
