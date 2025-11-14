@@ -1,4 +1,5 @@
 const express= require("express");
+const cors = require("cors");
 const connectDB=require("./configs/database")
 const loginSignupRouter=require("./routes/loginSignUp");
 const userRouter=require("./routes/userRoutes");
@@ -11,6 +12,7 @@ const morgan=require("morgan");
 const helmet=require("helmet");
 const app=express();
 app.use(express.json());
+app.use(cors());
 app.use(helmet());
 app.use(morgan("common"))
 app.use("/api/v1",loginSignupRouter);
