@@ -12,7 +12,7 @@ const {
   commentStories,
 } = require("../controllers/storyController");
 
-router.post("/stories", authenticateToken, upload.single("file"), createStory);
+router.post("/stories", authenticateToken, upload.single("mediaUrl"), createStory);
 
 router.get("/stories", authenticateToken, getAllStory);
 

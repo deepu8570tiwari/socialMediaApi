@@ -1,5 +1,6 @@
 const { tryCatch } = require("../utils/tryCatch");
 const Post = require("../models/postModel");
+const cloudinary = require('../configs/cloudinary');
 const { uploadToCloudinary } = require("../middleware/isUpload");
 const User=require("../models/userModel");
 // ===============================
@@ -100,7 +101,6 @@ const deletePost = tryCatch(async (req, res) => {
 
 const likedDislikedPost = tryCatch(async (req, res) => {
     const userId = req.user.id;
-    console.log(userId+"userId");
     const findPost = await Post.findById(req.params.id);
     console.log(req.params.id+"req.params.id");
     if (!findPost) {
@@ -153,6 +153,57 @@ const commentPost = tryCatch(async (req, res) => {
         comments: updatedPost.comments
     });
 });
+const toggleSavePost = tryCatch(async (req, res) => {
+  const userId = req.user.id;
+  const postId = req.params.id;
+
+  const user = await User.findById(userId);
+
+  if (!user) {
+    return res.status(404).json({
+      status: false,
+      message: "User not found"
+    });
+  }
+
+  const alreadySaved = user.savedPosts.includes(postId);
+
+  // UNSAVE
+  if (alreadySaved) {
+    user.savedPosts = user.savedPosts.filter(id => id.toString() !== postId);
+    await user.save();
+
+    return res.status(200).json({
+      status: true,
+      action: "unsaved",
+      message: "Post removed from saved"
+    });
+  }
+
+  // SAVE
+  user.savedPosts.push(postId);
+  await user.save();
+
+  return res.status(200).json({
+    status: true,
+    action: "saved",
+    message: "Post saved successfully"
+  });
+});
+
+const getSavedPosts = tryCatch(async (req, res) => {
+  const userId = req.user.id;
+
+  const user = await User.findById(userId)
+    .select("savedPosts")
+    .populate("savedPosts");
+
+  return res.status(200).json({
+    status: true,
+    total: user.savedPosts.length,
+    posts: user.savedPosts
+  });
+});
 
 module.exports = {
     createPost,
@@ -160,5 +211,7 @@ module.exports = {
     getSinglePost,
     deletePost,
     likedDislikedPost,
-    commentPost
+    commentPost,
+    toggleSavePost,
+    getSavedPosts
 };

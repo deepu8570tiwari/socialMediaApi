@@ -10,6 +10,8 @@ const {
   deletePost,
   likedDislikedPost,
   commentPost,
+  toggleSavePost,
+  getSavedPosts
 } = require("../controllers/postController");
 
 router.post("/posts", authenticateToken, upload.single("mediaUrl"), createPost);
@@ -18,5 +20,7 @@ router.get("/posts/:id", authenticateToken, getSinglePost);
 router.delete("/posts/:id", authenticateToken, deletePost);
 router.put("/posts/:id/like", authenticateToken, likedDislikedPost);
 router.post("/posts/:id/comment", authenticateToken, commentPost);
+router.post("/posts/toggle-save/:id", authenticateToken, toggleSavePost);
+router.get("/posts/saved", authenticateToken, getSavedPosts);
 
 module.exports = router;

@@ -63,6 +63,12 @@ const UserSchema = new mongoose.Schema(
         ref: "Post",
       },
     ],
+    savedReels: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Reel",
+      },
+    ],
     posts: [
       {
         type: mongoose.Schema.Types.ObjectId,

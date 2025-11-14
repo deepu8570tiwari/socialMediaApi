@@ -1,26 +1,32 @@
 const { tryCatch } = require("../utils/tryCatch");
 const Story = require("../models/storyModel");
+const cloudinary = require('../configs/cloudinary');
 const { uploadToCloudinary } = require("../middleware/isUpload");
+const User=require("../models/userModel");
 const createStory = tryCatch(async (req, res) => {
   const { mediaType } = req.body;
   const userId = req.user.id;
-
-  if (!req.file || !req.file.path) {
+  if (!req.file) {
     return res.status(400).json({ success: false, message: "No file uploaded" });
   }
   const expiryAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
   const resourceType = req.file.mimetype.startsWith("video/") ? "video" : "image";
 
     // Upload file buffer to Cloudinary (same helper as in profile upload)
-  const result = await uploadToCloudinary(req.file.buffer, "reels", resourceType);
+  const result = await uploadToCloudinary(req.file.buffer, "story", resourceType);
     
   const story = await Story.create({
-    user: userId,
+    userId: userId,
     mediaType,
     mediaUrl:result.secure_url,
+    publicId: result.public_id,
     expiryAt,
   });
-
+  const userInfo= await User.findById(userId);
+      if(userInfo){
+          userInfo.story.push(story._id);
+          await userInfo.save();
+      }
   return res.status(201).json({
     success: true,
     message: "Story created successfully",
@@ -44,7 +50,7 @@ const getAllStory = tryCatch(async (req, res) => {
 
 const viewAllStories = tryCatch(async (req, res) => {
   const { id } = req.params;
-  const userId = req.user._id;
+  const userId = req.user.id;
 
   const story = await Story.findById(id);
   if (!story) {
@@ -65,7 +71,7 @@ const viewAllStories = tryCatch(async (req, res) => {
 
 
 const likedDislikedStories = tryCatch(async (req, res) => {
-  const userId = req.user._id;
+  const userId = req.user.id;
   const story = await Story.findById(req.params.id);
 
   if (!story) {
@@ -90,7 +96,7 @@ const likedDislikedStories = tryCatch(async (req, res) => {
 });
 
 const commentStories = tryCatch(async (req, res) => {
-  const userId = req.user._id;
+  const userId = req.user.id;
   const { text } = req.body;
 
   const story = await Story.findById(req.params.id);
@@ -99,7 +105,7 @@ const commentStories = tryCatch(async (req, res) => {
   }
 
   const comment = {
-    user: userId,
+    userId: userId,
     text,
     createdAt: new Date(),
   };
@@ -121,14 +127,14 @@ const commentStories = tryCatch(async (req, res) => {
 
 
 const deleteStories = tryCatch(async (req, res) => {
-  const userId = req.user._id;
+  const userId = req.user.id;
   const story = await Story.findById(req.params.id);
 
   if (!story) {
     return res.status(404).json({ success: false, message: "No story found" });
   }
 
-  if (story.user.toString() !== userId.toString()) {
+  if (story.userId.toString() !== userId.toString()) {
     return res.status(403).json({ success: false, message: "User not authorized to delete this story" });
   }
 
@@ -139,7 +145,6 @@ const deleteStories = tryCatch(async (req, res) => {
     message: "Story deleted successfully",
   });
 });
-
 
 module.exports = {
   createStory,

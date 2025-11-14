@@ -10,13 +10,16 @@ const {
   deleteReel,
   likedDislikedReel,
   commentReel,
+  toggleSaveReel,
+  getSavedReels
 } = require("../controllers/reelController");
 
-router.post("/reels", authenticateToken, upload.single("file"), createReel);
+router.post("/reels", authenticateToken, upload.single("mediaUrl"), createReel);
 router.get("/reels", authenticateToken, getAllReel);
 router.get("/reels/:id", authenticateToken, getSingleReel);
 router.delete("/reels/:id", authenticateToken, deleteReel);
 router.put("/reels/:id/like", authenticateToken, likedDislikedReel);
 router.post("/reels/:id/comment", authenticateToken, commentReel);
-
+router.post("/reels/toggle-save/:id", authenticateToken, toggleSaveReel);
+router.get("/reels/saved", authenticateToken, getSavedReels);
 module.exports = router;
